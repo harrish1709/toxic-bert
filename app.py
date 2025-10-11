@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 
 # --- Config ---
-HF_TOKEN = "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"
+HF_TOKEN = os.getenv("HF_TOKEN", "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")
 # --- Routes ---
 @app.route('/moderate', methods=['POST'])
 def moderate():
@@ -35,3 +35,4 @@ def moderate():
 
 if __name__ == '__main__':
     app.run()
+
