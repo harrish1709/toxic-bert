@@ -1,6 +1,6 @@
 import requests
 
-HF_TOKEN = "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"  # get one free at huggingface.co/settings/tokens
+HF_TOKEN = "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"  # get one free at huggingface.co/settings/tokens
 
 @app.route('/moderate', methods=['POST'])
 def moderate():
@@ -27,4 +27,5 @@ def moderate():
 
 if __name__ == '__main__':
     app.run()
+
 
