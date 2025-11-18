@@ -1,4 +1,5 @@
 flask
 transformers
-torch==2.2.0+cpu
+torch==2.5.0+cpu
 -f https://download.pytorch.org/whl/cpu
+gunicorn
