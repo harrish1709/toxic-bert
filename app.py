@@ -10,7 +10,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 model = AutoModelForSequenceClassification.from_pretrained(
     MODEL_NAME,
-    torch_dtype=torch.float16,
+    device_map="cpu",
     low_cpu_mem_usage=True
 ).eval()
 
@@ -41,3 +41,4 @@ def moderate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
