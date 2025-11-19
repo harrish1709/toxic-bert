@@ -1,44 +1,41 @@
 from flask import Flask, request, jsonify
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from functools import lru_cache
 import torch
 
 app = Flask(__name__)
 
-MODEL_NAME = "unitary/toxic-bert"
+MODEL_NAME = "martin-ha/toxic-comment-model"  # smaller model
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-
-model = AutoModelForSequenceClassification.from_pretrained(
-    MODEL_NAME,
-    device_map="cpu",
-    low_cpu_mem_usage=True
-).eval()
-
-label_to_index = {"toxic": 0}
+@lru_cache()
+def load_model():
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        MODEL_NAME,
+        low_cpu_mem_usage=True
+    ).eval()
+    return tokenizer, model
 
 
 @app.route("/moderate", methods=["POST"])
 def moderate():
-    try:
-        data = request.get_json(force=True)
-        text = data.get("text", "")
+    tokenizer, model = load_model()
 
-        if not text:
-            return jsonify({"error": "No text provided"}), 400
+    data = request.get_json(force=True)
+    text = data.get("text", "")
 
-        inputs = tokenizer(text, return_tensors="pt", truncation=True)
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
 
-        with torch.inference_mode():
-            outputs = model(**inputs)
-            scores = torch.softmax(outputs.logits, dim=1)[0]
+    inputs = tokenizer(text, return_tensors="pt", truncation=True)
 
-        toxic_score = float(scores[label_to_index["toxic"]])
-        return jsonify({"toxic_score": toxic_score})
+    with torch.inference_mode():
+        outputs = model(**inputs)
+        scores = torch.softmax(outputs.logits, dim=1)[0]
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    toxic_score = float(scores[1])  # index depends on model
+    return jsonify({"toxic_score": toxic_score})
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
