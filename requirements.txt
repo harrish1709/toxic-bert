@@ -1,6 +1,4 @@
-Flask
-transformers
-torch
-tokenizers
+flask
 gunicorn
-profanity_check
+alt-profanity-check
+scikit-learn==1.3.2
