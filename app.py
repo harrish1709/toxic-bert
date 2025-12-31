@@ -1,28 +1,18 @@
-
 from flask import Flask, request, jsonify
-from transformers import pipeline
+from profanity_check import predict_prob
 
 app = Flask(__name__)
-moderator = pipeline(
-    "text-classification",
-    model="unitary/toxic-bert",
-    top_k=None
-)
 
 @app.route('/moderate', methods=['POST'])
 def moderate():
     data = request.json
     text = data.get("text", "")
-
-    try:
-        results = moderator(text)[0]
-        toxic_score = next(
-            (r["score"] for r in results if r["label"] == "toxic"),
-            0
-        )
-        return jsonify({"toxic_score": toxic_score})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    
+    # predict_prob returns a numpy array like [0.04], we take the first item
+    # This runs in milliseconds and uses negligible RAM
+    score = predict_prob([text])[0]
+    
+    return jsonify({"toxic_score": float(score)})
 
 if __name__ == "__main__":
     app.run()
